@@ -17,6 +17,9 @@ namespace NCL {
 
             StateMachine* stateMachine;
             float counter;
+
+			StateGameObject* AddStateObjectToWorld(const Vector3& position);
+			StateGameObject* testStateObject;
         };
     }
 }
