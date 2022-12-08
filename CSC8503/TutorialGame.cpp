@@ -71,11 +71,11 @@ TutorialGame::~TutorialGame()	{
 }
 
 void TutorialGame::UpdateGame(float dt) {
-	if (!inSelectionMode) {
+	/*if (!inSelectionMode) {
 		world->GetMainCamera()->UpdateCamera(dt);
-	}
-	if (lockedObject != nullptr) {
-		Vector3 objPos = lockedObject->GetTransform().GetPosition();
+	}*/
+	if (player != nullptr) {
+		Vector3 objPos = player->GetTransform().GetPosition();
 		Vector3 camPos = objPos + lockedOffset;
 
 		Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0,1,0));
@@ -176,15 +176,15 @@ void TutorialGame::UpdateKeys() {
 		world->ShuffleObjects(false);
 	}
 
-	if (lockedObject) {
-		LockedObjectMovement();
+	if (player) {
+		PlayerObjectMovement();
 	}
 	else {
 		DebugObjectMovement();
 	}
 }
 
-void TutorialGame::LockedObjectMovement() {
+void TutorialGame::PlayerObjectMovement() {
 	Matrix4 view		= world->GetMainCamera()->BuildViewMatrix();
 	Matrix4 camWorld	= view.Inverse();
 
@@ -200,21 +200,21 @@ void TutorialGame::LockedObjectMovement() {
 
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) {
-		selectionObject->GetPhysicsObject()->AddForce(fwdAxis * force);
+		player->GetPhysicsObject()->AddForce(fwdAxis * force);
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) {
-		selectionObject->GetPhysicsObject()->AddForce(-fwdAxis * force);
+		player->GetPhysicsObject()->AddForce(-fwdAxis * force);
 	}
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::LEFT)) {
-		selectionObject->GetPhysicsObject()->AddForce(-rightAxis * force);
+		player->GetPhysicsObject()->AddForce(-rightAxis * force);
 	}
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
-		selectionObject->GetPhysicsObject()->AddForce(rightAxis * force);
+		player->GetPhysicsObject()->AddForce(rightAxis * force);
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NEXT)) {
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0,-10,0));
+		player->GetPhysicsObject()->AddForce(Vector3(0,-10,0));
 	}
 }
 
@@ -452,7 +452,7 @@ void TutorialGame::InitDefaultFloor() {
 
 void TutorialGame::InitGameExamples() {
 	//player->PlayerInit(Vector3(0, 5, 0),charMesh,basicShader,world);
-	AddPlayerToWorld(Vector3(0, 5, 0));
+	player = AddPlayerToWorld(Vector3(0, 5, 0));
 	AddEnemyToWorld(Vector3(5, 5, 0));
 	AddBonusToWorld(Vector3(10, 5, 0));
 	BridgeConstraintTest();
@@ -537,7 +537,7 @@ bool TutorialGame::SelectObject() {
 				return false;
 			}
 		}
-		if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L)) {
+		/*if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L)) {
 			if (selectionObject) {
 				if (lockedObject == selectionObject) {
 					lockedObject = nullptr;
@@ -546,7 +546,7 @@ bool TutorialGame::SelectObject() {
 					lockedObject = selectionObject;
 				}
 			}
-		}
+		}*/
 	}
 	else {
 		Debug::Print("Press Q to change to select mode!", Vector2(5, 85));

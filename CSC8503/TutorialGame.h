@@ -43,7 +43,7 @@ namespace NCL {
 			bool SelectObject();
 			void MoveSelectedObject();
 			void DebugObjectMovement();
-			void LockedObjectMovement();
+			void PlayerObjectMovement();
 
 			void BridgeConstraintTest();
 
@@ -60,6 +60,7 @@ namespace NCL {
 			StateGameObject* testStateObject;
 
 			//Player* player;
+			GameObject* player = nullptr;
 
 #ifdef USEVULKAN
 			GameTechVulkanRenderer*	renderer;
