@@ -1,5 +1,7 @@
 #pragma once
 using namespace NCL::Maths;
+#include "Vector3.h"
+#include "Matrix3.h"
 
 namespace NCL {
 	class CollisionVolume;

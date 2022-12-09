@@ -31,8 +31,28 @@ struct GamePacket {
 	}
 
 	int GetTotalSize() {
-		return sizeof(GamePacket) + size;
+		return sizeof(type) + sizeof(size) + size;
 	}
+};
+
+struct StringPacket : public GamePacket {
+
+	char stringData[256];
+
+	StringPacket(const std::string& message) {
+		type = BasicNetworkMessages::String_Message;
+		size = (short)message.length();
+
+		memcpy(stringData, message.data(), size);
+	};
+
+	std::string GetStringFromData() {
+		std::string realString(stringData);
+		realString.resize(size);
+		return realString;
+	}
+
+
 };
 
 class PacketReceiver {

@@ -1,5 +1,6 @@
 #pragma once
 #include <random>
+#include <functional>
 
 #include "Ray.h"
 #include "CollisionDetection.h"

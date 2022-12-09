@@ -1,6 +1,10 @@
 #pragma once
 #include <vector>
 
+#include "Vector3.h"
+#include "Matrix4.h"
+#include "Quaternion.h"
+
 using std::vector;
 
 using namespace NCL::Maths;

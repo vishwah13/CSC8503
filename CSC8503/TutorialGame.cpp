@@ -3,7 +3,6 @@
 #include "PhysicsObject.h"
 #include "RenderObject.h"
 #include "TextureLoader.h"
-
 #include "PositionConstraint.h"
 #include "OrientationConstraint.h"
 #include "StateGameObject.h"
@@ -24,7 +23,7 @@ TutorialGame::TutorialGame()	{
 
 	force = 10;
 	forceMagnitude	= 10.0f;
-	useGravity		= false;
+	useGravity		= true;
 	inSelectionMode = false;
 
 	InitialiseAssets();
@@ -53,6 +52,7 @@ void TutorialGame::InitialiseAssets() {
 	InitWorld();
 
 	damping = 0.4f;
+	physics->UseGravity(true);
 }
 
 TutorialGame::~TutorialGame()	{
