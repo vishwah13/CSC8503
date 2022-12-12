@@ -27,18 +27,11 @@ TutorialGame::TutorialGame()	{
 	forceMagnitude	= 10.0f;
 	useGravity		= true;
 	inSelectionMode = false;
+	player = new Character();
 
 	InitialiseAssets();
-	player = new Player();
 }
 
-/*
-
-Each of the little demo scenarios used in the game uses the same 2 meshes, 
-and the same texture and shader. There's no need to ever load in anything else
-for this module, even in the coursework, but you can add it if you like!
-
-*/
 void TutorialGame::InitialiseAssets() {
 	cubeMesh	= renderer->LoadMesh("cube.msh");
 	sphereMesh	= renderer->LoadMesh("sphere.msh");
@@ -73,59 +66,9 @@ TutorialGame::~TutorialGame()	{
 }
 
 void TutorialGame::UpdateGame(float dt) {
-	/*if (!inSelectionMode) {
-		world->GetMainCamera()->UpdateCamera(dt);
-	}*/
-	if (playerChar != nullptr) {
-		Vector3 objPos = playerChar->GetTransform().GetPosition();
-		Vector3 camPos = objPos + lockedOffset;
 
-		Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0,1,0));
-
-		Matrix4 modelMat = temp.Inverse();
-
-		Quaternion q(modelMat);
-		Vector3 angles = q.ToEuler(); //nearly there now!
-
-		world->GetMainCamera()->SetPosition(camPos);
-		world->GetMainCamera()->SetPitch(angles.x);
-		world->GetMainCamera()->SetYaw(angles.y);
-	}
-	//myDeltaTime += dt;
+	myDeltaTime += dt;
 	//UpdateKeys(myDeltaTime);
-
-	if (useGravity) {
-		Debug::Print("(G)ravity on", Vector2(5, 95), Debug::RED);
-	}
-	else {
-		Debug::Print("(G)ravity off", Vector2(5, 95), Debug::RED);
-	}
-
-	RayCollision closestCollision;
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::K) && selectionObject) {
-		Vector3 rayPos;
-		Vector3 rayDir;
-
-		rayDir = selectionObject->GetTransform().GetOrientation() * Vector3(0, 0, -1);
-
-		rayPos = selectionObject->GetTransform().GetPosition();
-
-		Ray r = Ray(rayPos, rayDir);
-
-		if (world->Raycast(r, closestCollision, true, selectionObject)) {
-			if (objClosest) {
-				objClosest->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-			}
-			objClosest = (GameObject*)closestCollision.node;
-
-			objClosest->GetRenderObject()->SetColour(Vector4(1, 0, 1, 1));
-		}
-	}
-
-	if (testStateObject) {
-		testStateObject->Update(dt);
-	}
-
 
 	//SelectObject();
 	//MoveSelectedObject();
@@ -138,7 +81,7 @@ void TutorialGame::UpdateGame(float dt) {
 	Debug::UpdateRenderables(dt);
 
 	if (player) {
-		player->PlayerUpdate(dt, world, playerChar);
+		player->Update(dt, world);
 	}
 
 }
@@ -181,84 +124,7 @@ void TutorialGame::UpdateKeys(float myDeltaTime) {
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F8)) {
 		world->ShuffleObjects(false);
 	}
-
-	//if (player) {
-	//	//PlayerObjectMovement(myDeltaTime);
-	//	player->PlayerUpdate(myDeltaTime, world);
-	//}
 }
-
-//void TutorialGame::PlayerObjectMovement(float dt) {
-//	Matrix4 view		= world->GetMainCamera()->BuildViewMatrix();
-//	Matrix4 camWorld	= view.Inverse();
-//
-//	Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); //view is inverse of model!
-//
-//	//forward is more tricky -  camera forward is 'into' the screen...
-//	//so we can take a guess, and use the cross of straight up, and
-//	//the right axis, to hopefully get a vector that's good enough!
-//
-//	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
-//	fwdAxis.y = 0.0f;
-//	fwdAxis.Normalise();
-//
-//
-//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) {
-//		player->GetPhysicsObject()->AddForce(fwdAxis * force);
-//	}
-//
-//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) {
-//		player->GetPhysicsObject()->AddForce(-fwdAxis * force);
-//	}
-//	if (Window::GetKeyboard()->KeyHeld(KeyboardKeys::LEFT)) {
-//		player->GetTransform().SetOrientation(Quaternion(0.0f, 1.0f , 0.0f, 1.0f) * playerRotateSpeed);
-//	}
-//	if (Window::GetKeyboard()->KeyHeld(KeyboardKeys::RIGHT)) {
-//		player->GetTransform().SetOrientation(Quaternion(0.0f, -1.0f , 0.0f, 1.0f) * playerRotateSpeed);
-//	}
-//
-//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NEXT)) {
-//		player->GetPhysicsObject()->AddForce(Vector3(0,-10,0));
-//	}
-//}
-
-//void TutorialGame::DebugObjectMovement() {
-////If we've selected an object, we can manipulate it with some key presses
-//	if (inSelectionMode && selectionObject) {
-//		//Twist the selected object!
-//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM4)) {
-//			selectionObject->GetPhysicsObject()->AddTorque(Vector3(-10, 0, 0));
-//		}
-//
-//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM4)) {
-//			selectionObject->GetPhysicsObject()->AddTorque(Vector3(10, 0, 0));
-//		}
-//
-//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM7)) {
-//			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, 10, 0));
-//		}
-//
-//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM8)) {
-//			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, -10, 0));
-//		}
-//
-//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM6)) {
-//			selectionObject->GetPhysicsObject()->AddTorque(Vector3(10, 0, 0));
-//		}
-//
-//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) {
-//			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, -10));
-//		}
-//
-//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) {
-//			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, 10));
-//		}
-//
-//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM5)) {
-//			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -10, 0));
-//		}
-//	}
-//}
 
 void TutorialGame::InitCamera() {
 	world->GetMainCamera()->SetNearPlane(0.1f);
@@ -290,6 +156,7 @@ A single function to add a large immoveable cube to the bottom of our world
 GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
 	GameObject* floor = new GameObject();
 
+	floor->SetName("floor");
 	Vector3 floorSize = Vector3(200, 2, 200);
 	AABBVolume* volume = new AABBVolume(floorSize);
 	floor->SetBoundingVolume((CollisionVolume*)volume);
@@ -389,6 +256,7 @@ GameObject* TutorialGame::AddEnemyToWorld(const Vector3& position) {
 	float inverseMass	= 0.5f;
 
 	GameObject* character = new GameObject();
+	character->SetName("Enemy");
 
 	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
 	character->SetBoundingVolume((CollisionVolume*)volume);
@@ -403,7 +271,7 @@ GameObject* TutorialGame::AddEnemyToWorld(const Vector3& position) {
 	character->GetPhysicsObject()->SetInverseMass(inverseMass);
 	character->GetPhysicsObject()->InitSphereInertia();
 
-	character->GetPhysicsObject()->SetElasticity(1.0f);
+	character->GetPhysicsObject()->SetElasticity(0.0f);
 
 	world->AddGameObject(character);
 
@@ -457,7 +325,7 @@ void TutorialGame::InitDefaultFloor() {
 
 void TutorialGame::InitGameExamples() {
 
-	playerChar = player->PlayerInit(Vector3(0, 5, 0), charMesh, basicShader, world);
+	player->Init("Goaty",Vector3(0, 5, 0), charMesh, basicShader, world);
 	
 	//player = AddPlayerToWorld(Vector3(0, 5, 0));
 	AddEnemyToWorld(Vector3(5, 5, 0));

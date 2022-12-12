@@ -6,7 +6,7 @@
 #include "PhysicsSystem.h"
 
 #include "StateGameObject.h"
-#include "Player.h"
+#include "Character.h"
 
 namespace NCL {
 	namespace CSC8503 {
@@ -60,9 +60,7 @@ namespace NCL {
 			StateGameObject* AddStateObjectToWorld(const Vector3& position);
 			StateGameObject* testStateObject;
 
-			Player* player = nullptr;
-			GameObject* playerChar = nullptr;
-			//GameObject* player = nullptr;
+			Character* player = nullptr;
 
 #ifdef USEVULKAN
 			GameTechVulkanRenderer*	renderer;

@@ -73,13 +73,15 @@ namespace NCL {
 				return inverseInteriaTensor;
 			}
 
+			float friction;
+
 		protected:
 			const CollisionVolume* volume;
 			Transform*		transform;
 
 			float inverseMass;
 			float elasticity;
-			float friction;
+			
 
 			//linear stuff
 			Vector3 linearVelocity;
