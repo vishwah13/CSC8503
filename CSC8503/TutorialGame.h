@@ -6,6 +6,7 @@
 #include "PhysicsSystem.h"
 
 #include "StateGameObject.h"
+#include "ScoreManager.h"
 #include "Character.h"
 
 namespace NCL {
@@ -61,6 +62,7 @@ namespace NCL {
 			StateGameObject* testStateObject;
 
 			Character* player = nullptr;
+			ScoreManager* scoreManager = nullptr;
 
 #ifdef USEVULKAN
 			GameTechVulkanRenderer*	renderer;

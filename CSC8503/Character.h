@@ -1,9 +1,10 @@
 #pragma once
 #include "Vector3.h"
+class ScoreManager;
 
 namespace NCL {
 	class MeshGeometry;
-	class GameWorld;
+	//class GameWorld;
 	namespace Rendering {
 		class ShaderBase;
 	}
@@ -19,14 +20,20 @@ namespace NCL {
 			float charFriction = 1.0f;
 			float jumpForce = 200.f;
 			bool bJump = false;
+			float waitTime;
 
-			Character();
+			ScoreManager* scoreManager;
+			GameWorld* gameWorld;
+
+			Character(ScoreManager* scoreManager, GameWorld* world);
 			virtual GameObject* Init(string name,const  NCL::Maths::Vector3& position, MeshGeometry* charMesh, NCL::Rendering::ShaderBase* basicShader, GameWorld* world);
 			virtual void Update(float dt, GameWorld* world);
 			void Jump();
 
 			virtual void OnCollisionBegin(GameObject* otherObject);
 			virtual void OnCollisionEnd(GameObject* otherObject);
+
+			void DestroyGameObject(GameTimer* timer, float timeToDestroy, GameObject* objectToDestroy);
 			
 			
 

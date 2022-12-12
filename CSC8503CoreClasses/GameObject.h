@@ -77,6 +77,8 @@ namespace NCL::CSC8503 {
 			return worldID;
 		}
 
+		bool bTriggerDelete = false;
+
 	protected:
 		Transform			transform;
 

@@ -7,14 +7,17 @@
 #include "ShaderBase.h"
 #include "Character.h"
 #include "Maths.h"
+#include "ScoreManager.h"
 
 using namespace NCL;
 using namespace CSC8503;
 using namespace Maths;
 using namespace Rendering;
 
-Character::Character() {
+Character::Character(ScoreManager* scoreManager,GameWorld* world) {
 
+	this->scoreManager = scoreManager;
+	this->gameWorld = world;
 }
 
 GameObject* NCL::CSC8503::Character::Init(string name,const NCL::Maths::Vector3& position, NCL::MeshGeometry* charMesh, NCL::Rendering::ShaderBase* basicShader, NCL::CSC8503::GameWorld* world)
@@ -96,6 +99,8 @@ void Character::OnCollisionBegin(GameObject* otherObject)
 {
 	if (otherObject->GetPhysicsObject() && otherObject->GetName() != "floor" && Window::GetKeyboard()->KeyDown(KeyboardKeys::E)) {
 		otherObject->GetPhysicsObject()->AddForce(otherObject->GetTransform().GetPosition() - transform.GetPosition() * damageForce);
+		scoreManager->AddScore(5);
+
 	}
 
 	if (otherObject->GetName() == "floor") {
@@ -108,4 +113,15 @@ void Character::OnCollisionEnd(GameObject* otherObject)
 	if (otherObject->GetName() == "floor") {
 		bJump = false;
 	}
+}
+
+void NCL::CSC8503::Character::DestroyGameObject(GameTimer* timer, float timeToDestroy, GameObject* objectToDestroy)
+{
+	/*waitTime += timer->GetTimeDeltaSeconds;
+
+	if (waitTime > timeToDestroy) {
+		gameWorld->RemoveGameObject(objectToDestroy, true);
+		waitTime = 0;
+		std::cout << "Object Destroyed";
+	}*/
 }

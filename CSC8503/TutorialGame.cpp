@@ -7,6 +7,7 @@
 #include "OrientationConstraint.h"
 #include "StateGameObject.h"
 #include "StateMachine.h"
+#include "GameTimer.h"
 
 using namespace NCL;
 using namespace CSC8503;
@@ -27,7 +28,8 @@ TutorialGame::TutorialGame()	{
 	forceMagnitude	= 10.0f;
 	useGravity		= true;
 	inSelectionMode = false;
-	player = new Character();
+	scoreManager = new ScoreManager();
+	player = new Character(scoreManager,world);
 
 	InitialiseAssets();
 }
@@ -63,6 +65,9 @@ TutorialGame::~TutorialGame()	{
 	delete physics;
 	delete renderer;
 	delete world;
+
+	delete scoreManager;
+	delete player;
 }
 
 void TutorialGame::UpdateGame(float dt) {
@@ -72,6 +77,9 @@ void TutorialGame::UpdateGame(float dt) {
 
 	//SelectObject();
 	//MoveSelectedObject();
+
+	Debug::Print("Time: " + std::to_string(Window::GetTimer()->GetTotalTimeSeconds()), Vector2(35, 5));
+	Debug::Print("Score: " + std::to_string(scoreManager->GetScore()), Vector2(35, 10));
 
 	world->UpdateWorld(dt);
 	renderer->Update(dt);
@@ -257,6 +265,7 @@ GameObject* TutorialGame::AddEnemyToWorld(const Vector3& position) {
 
 	GameObject* character = new GameObject();
 	character->SetName("Enemy");
+	character->bTriggerDelete = true;
 
 	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
 	character->SetBoundingVolume((CollisionVolume*)volume);
@@ -469,7 +478,7 @@ void TutorialGame::BridgeConstraintTest() {
 	float maxDistance = 30; // constraint distance
 	float cubeDistance = 20; // distance between links
 	
-	Vector3 startPos = Vector3(0,-50,0);
+	Vector3 startPos = Vector3(0,20,0);
 	
 	GameObject * start = AddCubeToWorld(startPos + Vector3(0, 0, 0), cubeSize, 0);
 	GameObject * end = AddCubeToWorld(startPos + Vector3((numLinks + 2) * cubeDistance, 0, 0), cubeSize, 0);
