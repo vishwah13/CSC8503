@@ -6,8 +6,7 @@
 #include "PhysicsSystem.h"
 
 #include "StateGameObject.h"
-
-//#include "Player.h"
+#include "Player.h"
 
 namespace NCL {
 	namespace CSC8503 {
@@ -19,11 +18,13 @@ namespace NCL {
 			virtual void UpdateGame(float dt);
 
 		protected:
+			float myDeltaTime;
 			float force;
+			float playerRotateSpeed;
 			void InitialiseAssets();
 
 			void InitCamera();
-			void UpdateKeys();
+			void UpdateKeys(float dt);
 
 			void InitWorld();
 
@@ -43,7 +44,7 @@ namespace NCL {
 			bool SelectObject();
 			void MoveSelectedObject();
 			void DebugObjectMovement();
-			void PlayerObjectMovement();
+			void PlayerObjectMovement(float dt);
 
 			void BridgeConstraintTest();
 
@@ -59,8 +60,9 @@ namespace NCL {
 			StateGameObject* AddStateObjectToWorld(const Vector3& position);
 			StateGameObject* testStateObject;
 
-			//Player* player;
-			GameObject* player = nullptr;
+			Player* player = nullptr;
+			GameObject* playerChar = nullptr;
+			//GameObject* player = nullptr;
 
 #ifdef USEVULKAN
 			GameTechVulkanRenderer*	renderer;

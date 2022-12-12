@@ -21,13 +21,15 @@ TutorialGame::TutorialGame()	{
 
 	physics		= new PhysicsSystem(*world);
 
+	myDeltaTime = 0;
 	force = 10;
+	playerRotateSpeed = 0.25f;
 	forceMagnitude	= 10.0f;
 	useGravity		= true;
 	inSelectionMode = false;
 
 	InitialiseAssets();
-	//player = new Player();
+	player = new Player();
 }
 
 /*
@@ -52,7 +54,7 @@ void TutorialGame::InitialiseAssets() {
 	InitWorld();
 
 	damping = 0.4f;
-	physics->UseGravity(true);
+	
 }
 
 TutorialGame::~TutorialGame()	{
@@ -74,8 +76,8 @@ void TutorialGame::UpdateGame(float dt) {
 	/*if (!inSelectionMode) {
 		world->GetMainCamera()->UpdateCamera(dt);
 	}*/
-	if (player != nullptr) {
-		Vector3 objPos = player->GetTransform().GetPosition();
+	if (playerChar != nullptr) {
+		Vector3 objPos = playerChar->GetTransform().GetPosition();
 		Vector3 camPos = objPos + lockedOffset;
 
 		Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0,1,0));
@@ -89,8 +91,8 @@ void TutorialGame::UpdateGame(float dt) {
 		world->GetMainCamera()->SetPitch(angles.x);
 		world->GetMainCamera()->SetYaw(angles.y);
 	}
-
-	UpdateKeys();
+	//myDeltaTime += dt;
+	//UpdateKeys(myDeltaTime);
 
 	if (useGravity) {
 		Debug::Print("(G)ravity on", Vector2(5, 95), Debug::RED);
@@ -125,8 +127,8 @@ void TutorialGame::UpdateGame(float dt) {
 	}
 
 
-	SelectObject();
-	MoveSelectedObject();
+	//SelectObject();
+	//MoveSelectedObject();
 
 	world->UpdateWorld(dt);
 	renderer->Update(dt);
@@ -135,9 +137,13 @@ void TutorialGame::UpdateGame(float dt) {
 	renderer->Render();
 	Debug::UpdateRenderables(dt);
 
+	if (player) {
+		player->PlayerUpdate(dt, world, playerChar);
+	}
+
 }
 
-void TutorialGame::UpdateKeys() {
+void TutorialGame::UpdateKeys(float myDeltaTime) {
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F1)) {
 		InitWorld(); //We can reset the simulation at any time with F1
 		selectionObject = nullptr;
@@ -176,85 +182,83 @@ void TutorialGame::UpdateKeys() {
 		world->ShuffleObjects(false);
 	}
 
-	if (player) {
-		PlayerObjectMovement();
-	}
-	else {
-		DebugObjectMovement();
-	}
+	//if (player) {
+	//	//PlayerObjectMovement(myDeltaTime);
+	//	player->PlayerUpdate(myDeltaTime, world);
+	//}
 }
 
-void TutorialGame::PlayerObjectMovement() {
-	Matrix4 view		= world->GetMainCamera()->BuildViewMatrix();
-	Matrix4 camWorld	= view.Inverse();
+//void TutorialGame::PlayerObjectMovement(float dt) {
+//	Matrix4 view		= world->GetMainCamera()->BuildViewMatrix();
+//	Matrix4 camWorld	= view.Inverse();
+//
+//	Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); //view is inverse of model!
+//
+//	//forward is more tricky -  camera forward is 'into' the screen...
+//	//so we can take a guess, and use the cross of straight up, and
+//	//the right axis, to hopefully get a vector that's good enough!
+//
+//	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
+//	fwdAxis.y = 0.0f;
+//	fwdAxis.Normalise();
+//
+//
+//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) {
+//		player->GetPhysicsObject()->AddForce(fwdAxis * force);
+//	}
+//
+//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) {
+//		player->GetPhysicsObject()->AddForce(-fwdAxis * force);
+//	}
+//	if (Window::GetKeyboard()->KeyHeld(KeyboardKeys::LEFT)) {
+//		player->GetTransform().SetOrientation(Quaternion(0.0f, 1.0f , 0.0f, 1.0f) * playerRotateSpeed);
+//	}
+//	if (Window::GetKeyboard()->KeyHeld(KeyboardKeys::RIGHT)) {
+//		player->GetTransform().SetOrientation(Quaternion(0.0f, -1.0f , 0.0f, 1.0f) * playerRotateSpeed);
+//	}
+//
+//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NEXT)) {
+//		player->GetPhysicsObject()->AddForce(Vector3(0,-10,0));
+//	}
+//}
 
-	Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); //view is inverse of model!
-
-	//forward is more tricky -  camera forward is 'into' the screen...
-	//so we can take a guess, and use the cross of straight up, and
-	//the right axis, to hopefully get a vector that's good enough!
-
-	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
-	fwdAxis.y = 0.0f;
-	fwdAxis.Normalise();
-
-
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) {
-		player->GetPhysicsObject()->AddForce(fwdAxis * force);
-	}
-
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) {
-		player->GetPhysicsObject()->AddForce(-fwdAxis * force);
-	}
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::LEFT)) {
-		player->GetPhysicsObject()->AddForce(-rightAxis * force);
-	}
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
-		player->GetPhysicsObject()->AddForce(rightAxis * force);
-	}
-
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NEXT)) {
-		player->GetPhysicsObject()->AddForce(Vector3(0,-10,0));
-	}
-}
-
-void TutorialGame::DebugObjectMovement() {
-//If we've selected an object, we can manipulate it with some key presses
-	if (inSelectionMode && selectionObject) {
-		//Twist the selected object!
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM4)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(-10, 0, 0));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM4)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(10, 0, 0));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM7)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, 10, 0));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM8)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, -10, 0));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM6)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(10, 0, 0));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) {
-			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, -10));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) {
-			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, 10));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM5)) {
-			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -10, 0));
-		}
-	}
-}
+//void TutorialGame::DebugObjectMovement() {
+////If we've selected an object, we can manipulate it with some key presses
+//	if (inSelectionMode && selectionObject) {
+//		//Twist the selected object!
+//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM4)) {
+//			selectionObject->GetPhysicsObject()->AddTorque(Vector3(-10, 0, 0));
+//		}
+//
+//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM4)) {
+//			selectionObject->GetPhysicsObject()->AddTorque(Vector3(10, 0, 0));
+//		}
+//
+//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM7)) {
+//			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, 10, 0));
+//		}
+//
+//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM8)) {
+//			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, -10, 0));
+//		}
+//
+//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM6)) {
+//			selectionObject->GetPhysicsObject()->AddTorque(Vector3(10, 0, 0));
+//		}
+//
+//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) {
+//			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, -10));
+//		}
+//
+//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) {
+//			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, 10));
+//		}
+//
+//		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM5)) {
+//			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -10, 0));
+//		}
+//	}
+//}
 
 void TutorialGame::InitCamera() {
 	world->GetMainCamera()->SetNearPlane(0.1f);
@@ -268,6 +272,7 @@ void TutorialGame::InitCamera() {
 void TutorialGame::InitWorld() {
 	world->ClearAndErase();
 	physics->Clear();
+	physics->UseGravity(true);
 
 	//InitMixedGridWorld(15, 15, 3.5f, 3.5f);
 
@@ -451,8 +456,10 @@ void TutorialGame::InitDefaultFloor() {
 }
 
 void TutorialGame::InitGameExamples() {
-	//player->PlayerInit(Vector3(0, 5, 0),charMesh,basicShader,world);
-	player = AddPlayerToWorld(Vector3(0, 5, 0));
+
+	playerChar = player->PlayerInit(Vector3(0, 5, 0), charMesh, basicShader, world);
+	
+	//player = AddPlayerToWorld(Vector3(0, 5, 0));
 	AddEnemyToWorld(Vector3(5, 5, 0));
 	AddBonusToWorld(Vector3(10, 5, 0));
 	BridgeConstraintTest();

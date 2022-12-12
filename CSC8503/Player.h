@@ -9,15 +9,20 @@ namespace NCL {
 	}
 	namespace CSC8503 {
 		class GameObject;
-
-		class Player {
+		class Player : public GameObject {
 
 
 		public:
+			float force = 0;
 
-			Player() {}
+			Player();
 			GameObject* PlayerInit(const  NCL::Maths::Vector3& position, MeshGeometry* charMesh, NCL::Rendering::ShaderBase* basicShader, GameWorld* world);
-			void PlayerUpdate(float dt);
+			void PlayerUpdate(float dt, GameWorld* world, GameObject* obj);
+
+			void OnCollisionBegin(GameObject* otherObject) override;
+			void OnCollisionEnd(GameObject* otherObject) override;
+
+		protected:
 		};
 	}
 }
