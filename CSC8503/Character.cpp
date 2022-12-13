@@ -27,6 +27,7 @@ GameObject* NCL::CSC8503::Character::Init(string name,const NCL::Maths::Vector3&
 	rotationSpeed = 5;
 	charFriction = 1.0f;
 	jumpForce = 500.0f;
+	mouseSensitivity = 0.5f;
 	
 	meshSize = 1.0f;
 	inverseMass = 0.5f;
@@ -66,10 +67,15 @@ void Character::Update(float dt, NCL::CSC8503::GameWorld* world)
 
 		Quaternion q(modelMat);
 		Vector3 angles = q.ToEuler();
+		
+		float mouseX = Window::GetMouse()->GetAbsolutePosition().x * -1 * mouseSensitivity;
+		float mouseY = Window::GetMouse()->GetAbsolutePosition().y * -1 * mouseSensitivity;
+
+		mouseY = Clamp(mouseY, -90.0f, 90.0f);
 
 		world->GetMainCamera()->SetPosition(camPos);
-		world->GetMainCamera()->SetPitch(angles.x);
-		world->GetMainCamera()->SetYaw(angles.y);
+		world->GetMainCamera()->SetPitch(mouseY);
+		world->GetMainCamera()->SetYaw(mouseX);
 	}
 
 	Vector3 movement;
@@ -97,7 +103,7 @@ void NCL::CSC8503::Character::Jump()
 
 void Character::OnCollisionBegin(GameObject* otherObject)
 {
-	if (otherObject->GetPhysicsObject() && otherObject->GetName() != "floor" && Window::GetKeyboard()->KeyDown(KeyboardKeys::E)) {
+	if (otherObject->GetPhysicsObject() && otherObject->GetName() != "floor" && Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) {
 		otherObject->GetPhysicsObject()->AddForce(otherObject->GetTransform().GetPosition() - transform.GetPosition() * damageForce);
 		scoreManager->AddScore(5);
 

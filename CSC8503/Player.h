@@ -2,7 +2,7 @@
 
 namespace NCL {
 	namespace CSC8503 {
-		class Character;
+		//class Character;
 
 		class Player
 		{

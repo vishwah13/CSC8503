@@ -21,6 +21,7 @@ namespace NCL {
 			float jumpForce = 200.f;
 			bool bJump = false;
 			float waitTime;
+			float mouseSensitivity = 0.5f;
 
 			ScoreManager* scoreManager;
 			GameWorld* gameWorld;
