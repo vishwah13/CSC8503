@@ -26,6 +26,10 @@ namespace NCL::CSC8503 {
 			return isActive;
 		}
 
+		GameObject* GetGameObject() {
+			return this;
+		}
+
 		Transform& GetTransform() {
 			return transform;
 		}

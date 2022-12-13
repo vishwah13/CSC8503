@@ -1,6 +1,7 @@
 #pragma once
 #include "Vector3.h"
 class ScoreManager;
+class GameManager;
 
 namespace NCL {
 	class MeshGeometry;
@@ -23,10 +24,11 @@ namespace NCL {
 			float waitTime;
 			float mouseSensitivity = 0.5f;
 
+			GameManager* gameManager;
 			ScoreManager* scoreManager;
 			GameWorld* gameWorld;
 
-			Character(ScoreManager* scoreManager, GameWorld* world);
+			Character(GameManager* gameManager,ScoreManager* scoreManager, GameWorld* world);
 			virtual GameObject* Init(string name,const  NCL::Maths::Vector3& position, MeshGeometry* charMesh, NCL::Rendering::ShaderBase* basicShader, GameWorld* world);
 			virtual void Update(float dt, GameWorld* world);
 			void Jump();

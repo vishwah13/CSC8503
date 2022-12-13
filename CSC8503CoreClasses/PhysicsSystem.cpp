@@ -152,9 +152,6 @@ void PhysicsSystem::Update(float dt) {
 		}
 	}
 }
-
-
-
 /*
 Later on we're going to need to keep track of collisions
 across multiple frames, so we store them in a set.
@@ -227,7 +224,7 @@ void PhysicsSystem::BasicCollisionDetection() {
 			}
 			CollisionDetection::CollisionInfo info;
 			if (CollisionDetection::ObjectIntersection(*i, *j, info)) {
-				std::cout << "Collision between " << (*i)->GetName() << " and " << (*j)->GetName() << std::endl;
+				//std::cout << "Collision between " << (*i)->GetName() << " and " << (*j)->GetName() << std::endl;
 				ImpulseResolveCollision(*info.a, *info.b, info.point);
 				info.framesLeft = numCollisionFrames;
 				allCollisions.insert(info);

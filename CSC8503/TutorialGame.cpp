@@ -8,6 +8,9 @@
 #include "StateGameObject.h"
 #include "StateMachine.h"
 #include "GameTimer.h"
+#include "Assets.h"
+
+#include <fstream>
 
 using namespace NCL;
 using namespace CSC8503;
@@ -29,7 +32,10 @@ TutorialGame::TutorialGame()	{
 	useGravity		= true;
 	inSelectionMode = false;
 	scoreManager = new ScoreManager();
-	player = new Character(scoreManager,world);
+	gameManager = new GameManager();
+	//door = new Door(gameManager,world);
+	//coins = new Coin(world);
+	player = new Character(gameManager,scoreManager,world);
 
 	InitialiseAssets();
 }
@@ -41,6 +47,7 @@ void TutorialGame::InitialiseAssets() {
 	enemyMesh	= renderer->LoadMesh("Keeper.msh");
 	bonusMesh	= renderer->LoadMesh("apple.msh");
 	capsuleMesh = renderer->LoadMesh("capsule.msh");
+	coinMesh = renderer->LoadMesh("coin.msh");
 
 	basicTex	= renderer->LoadTexture("checkerboard.png");
 	basicShader = renderer->LoadShader("scene.vert", "scene.frag");
@@ -58,6 +65,7 @@ TutorialGame::~TutorialGame()	{
 	delete charMesh;
 	delete enemyMesh;
 	delete bonusMesh;
+	delete coinMesh;
 
 	delete basicTex;
 	delete basicShader;
@@ -148,7 +156,7 @@ void TutorialGame::InitWorld() {
 	physics->Clear();
 	physics->UseGravity(true);
 
-	//InitMixedGridWorld(15, 15, 3.5f, 3.5f);
+	//InitMixedGridWorld(10,10, 10.0f, 10.0f);
 
 	InitGameExamples();
 	InitDefaultFloor();
@@ -165,6 +173,7 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
 	GameObject* floor = new GameObject();
 
 	floor->SetName("floor");
+	floor->bTriggerDelete = true;
 	Vector3 floorSize = Vector3(200, 2, 200);
 	AABBVolume* volume = new AABBVolume(floorSize);
 	floor->SetBoundingVolume((CollisionVolume*)volume);
@@ -192,10 +201,11 @@ physics worlds. You'll probably need another function for the creation of OBB cu
 */
 GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius, float inverseMass) {
 	GameObject* sphere = new GameObject();
-
+	sphere->SetName("sphere");
 	Vector3 sphereSize = Vector3(radius, radius, radius);
 	SphereVolume* volume = new SphereVolume(radius);
 	sphere->SetBoundingVolume((CollisionVolume*)volume);
+	//sphere->bTriggerDelete = true;
 
 	sphere->GetTransform()
 		.SetScale(sphereSize)
@@ -206,15 +216,45 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 
 	sphere->GetPhysicsObject()->SetInverseMass(inverseMass);
 	sphere->GetPhysicsObject()->InitSphereInertia();
+	sphere->GetPhysicsObject()->SetElasticity(0.0f);
 
 	world->AddGameObject(sphere);
 
 	return sphere;
 }
 
+GameObject* NCL::CSC8503::TutorialGame::AddCollectableToWorld(const Vector3& position, float radius, float inverseMass)
+{
+	GameObject* coin = new GameObject();
+	coin->SetName("coin");
+
+	coin->bTriggerDelete = true;
+
+	Vector3 sphereSize = Vector3(radius, radius, radius);
+	AABBVolume* volume = new AABBVolume(sphereSize);
+	coin->SetBoundingVolume((CollisionVolume*)volume);
+
+	coin->GetTransform()
+		.SetScale(sphereSize)
+		.SetPosition(position);
+
+	coin->SetRenderObject(new RenderObject(&coin->GetTransform(), coinMesh, basicTex, basicShader));
+	coin->SetPhysicsObject(new PhysicsObject(&coin->GetTransform(), coin->GetBoundingVolume()));
+
+	coin->GetPhysicsObject()->SetInverseMass(inverseMass);
+	coin->GetPhysicsObject()->InitSphereInertia();
+	coin->GetPhysicsObject()->SetElasticity(0.0f);
+
+
+
+	world->AddGameObject(coin);
+
+	return coin;
+}
+
 GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass) {
 	GameObject* cube = new GameObject();
-
+	cube->SetName("cube");
 	AABBVolume* volume = new AABBVolume(dimensions);
 	cube->SetBoundingVolume((CollisionVolume*)volume);
 
@@ -227,10 +267,61 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
 	cube->GetPhysicsObject()->InitCubeInertia();
+	cube->GetPhysicsObject()->SetElasticity(0.0f);
 
 	world->AddGameObject(cube);
 
 	return cube;
+}
+
+GameObject* NCL::CSC8503::TutorialGame::AddKeyToWorld(const Vector3& position, Vector3 dimensions, float inverseMass)
+{
+	GameObject* key = new GameObject();
+	key->SetName("key");
+	key->bTriggerDelete = true;
+	AABBVolume* volume = new AABBVolume(dimensions);
+	key->SetBoundingVolume((CollisionVolume*)volume);
+
+	key->GetTransform()
+		.SetPosition(position)
+		.SetScale(dimensions * 2);
+
+	key->SetRenderObject(new RenderObject(&key->GetTransform(), cubeMesh, basicTex, basicShader));
+	key->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
+	key->SetPhysicsObject(new PhysicsObject(&key->GetTransform(), key->GetBoundingVolume()));
+
+	key->GetPhysicsObject()->SetInverseMass(inverseMass);
+	key->GetPhysicsObject()->InitCubeInertia();
+	key->GetPhysicsObject()->SetElasticity(0.0f);
+
+	world->AddGameObject(key);
+
+	return key;
+}
+
+GameObject* NCL::CSC8503::TutorialGame::AddDoorToWorld(const Vector3& position, Vector3 dimensions, float inverseMass)
+{
+	GameObject* door = new GameObject();
+	door->SetName("door");
+	door->bTriggerDelete = true;
+	AABBVolume* volume = new AABBVolume(dimensions);
+	door->SetBoundingVolume((CollisionVolume*)volume);
+
+	door->GetTransform()
+		.SetPosition(position)
+		.SetScale(dimensions * 2);
+
+	door->SetRenderObject(new RenderObject(&door->GetTransform(), cubeMesh, basicTex, basicShader));
+	door->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
+	door->SetPhysicsObject(new PhysicsObject(&door->GetTransform(), door->GetBoundingVolume()));
+
+	door->GetPhysicsObject()->SetInverseMass(inverseMass);
+	door->GetPhysicsObject()->InitCubeInertia();
+	door->GetPhysicsObject()->SetElasticity(0.0f);
+
+	world->AddGameObject(door);
+
+	return door;
 }
 
 GameObject* TutorialGame::AddPlayerToWorld(const Vector3& position) {
@@ -333,13 +424,42 @@ void TutorialGame::InitDefaultFloor() {
 }
 
 void TutorialGame::InitGameExamples() {
-
+	//gameManager->bisKeyCollected = true;
+	//door->AddDoorToWorld(Vector3(10, 0, 0), Vector3(2, 4, 2), 1.0f, cubeMesh, basicShader, basicTex);
+	CreateMaze("TestGrid2.txt");
+	AddKeyToWorld(Vector3(15, 0, 0), Vector3(1, 1, 1), 1.0f);
+	AddDoorToWorld(Vector3(10, -15, 0), Vector3(1, 2, 1), 0.0f);
+	//coins->InitCollectableGridWorld(2, 2, 10, 10, .2f, this);
 	player->Init("Goaty",Vector3(0, 5, 0), charMesh, basicShader, world);
+	player->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
 	
-	//player = AddPlayerToWorld(Vector3(0, 5, 0));
 	AddEnemyToWorld(Vector3(5, 5, 0));
+	InitCollectableGridWorld(3, 3, 40, 40, 0.2f);
+	//AddCollectableToWorld(Vector3(10, 2, 0), .2f, 1.0f);
 	AddBonusToWorld(Vector3(10, 5, 0));
 	BridgeConstraintTest();
+}
+
+void NCL::CSC8503::TutorialGame::CreateMaze(const std::string& filename)
+{
+	std::ifstream infile(Assets::DATADIR + filename);
+	int nodeSize, gridWidth, gridHeight;
+
+	infile >> nodeSize;
+	infile >> gridWidth;
+	infile >> gridHeight;
+
+	for (int y = 0; y < gridHeight; ++y) {
+		for (int x = 0; x < gridWidth; ++x) {
+
+			char type = 0;
+			infile >> type;
+			Vector3 position = Vector3((float)(x * nodeSize) - 100, -13, (float)(y * nodeSize) - 100);
+			if (type == 'x') {
+				AddCubeToWorld(position, Vector3(nodeSize / 2, nodeSize / 2, nodeSize / 2), 0.0f);
+			}
+		}
+	}
 }
 
 void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius) {
@@ -352,13 +472,23 @@ void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacin
 	AddFloorToWorld(Vector3(0, -2, 0));
 }
 
+void NCL::CSC8503::TutorialGame::InitCollectableGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius)
+{
+	for (int x = 0; x < numCols; ++x) {
+		for (int z = 0; z < numRows; ++z) {
+			Vector3 position = Vector3(x * colSpacing, 10.0f, z * rowSpacing);
+			AddCollectableToWorld(position, radius, 1.0f);
+		}
+	}
+}
+
 void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing) {
 	float sphereRadius = 1.0f;
 	Vector3 cubeDims = Vector3(1, 1, 1);
 
 	for (int x = 0; x < numCols; ++x) {
 		for (int z = 0; z < numRows; ++z) {
-			Vector3 position = Vector3(x * colSpacing, 10.0f, z * rowSpacing);
+			Vector3 position = Vector3(x * colSpacing, 5.0f, z * rowSpacing);
 
 			if (rand() % 2) {
 				AddCubeToWorld(position, cubeDims);
@@ -478,7 +608,7 @@ void TutorialGame::BridgeConstraintTest() {
 	float maxDistance = 30; // constraint distance
 	float cubeDistance = 20; // distance between links
 	
-	Vector3 startPos = Vector3(0,20,0);
+	Vector3 startPos = Vector3(0,-50,0);
 	
 	GameObject * start = AddCubeToWorld(startPos + Vector3(0, 0, 0), cubeSize, 0);
 	GameObject * end = AddCubeToWorld(startPos + Vector3((numLinks + 2) * cubeDistance, 0, 0), cubeSize, 0);
@@ -498,6 +628,55 @@ void TutorialGame::BridgeConstraintTest() {
 		world->AddConstraint(constraint);
 }
 
+NCL::CSC8503::Coin::Coin(GameWorld* gameWorld)
+{
+	this->gameWorld = gameWorld;
+}
+
+void NCL::CSC8503::Coin::InitCollectableGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius, TutorialGame* game)
+{
+	for (int x = 0; x < numCols; ++x) {
+		for (int z = 0; z < numRows; ++z) {
+			Vector3 position = Vector3(x * colSpacing, 10.0f, z * rowSpacing);
+			AddCollectableToWorld(position, radius,1.0f, game->coinMesh,game->basicShader,game->basicTex);
+		}
+	}
+}
+
+GameObject* NCL::CSC8503::Coin::AddCollectableToWorld(const Vector3& position, float radius, float inverseMass,MeshGeometry* coinMesh,ShaderBase* basicShader,TextureBase* basicTex)
+{
+	//coin->SetName("coin");
+	this->bTriggerDelete = true;
+
+	Vector3 sphereSize = Vector3(radius, radius, radius);
+	AABBVolume* volume = new AABBVolume(sphereSize);
+	SetBoundingVolume((CollisionVolume*)volume);
+
+	GetTransform()
+		.SetScale(sphereSize)
+		.SetPosition(position);
+
+	SetRenderObject(new RenderObject(&GetTransform(), coinMesh, basicTex, basicShader));
+	SetPhysicsObject(new PhysicsObject(&GetTransform(), GetBoundingVolume()));
+
+	GetPhysicsObject()->SetInverseMass(inverseMass);
+	GetPhysicsObject()->InitSphereInertia();
+	GetPhysicsObject()->SetElasticity(0.0f);
 
 
 
+	gameWorld->AddGameObject(this);
+
+	return this;
+}
+
+void NCL::CSC8503::Coin::OnCollisionBegin(GameObject* otherObject)
+{
+	if (otherObject->GetName() == "Goaty") {
+		gameWorld->RemoveGameObject(this, false);
+	}
+}
+
+void NCL::CSC8503::Coin::OnCollisionEnd(GameObject* otherObject)
+{
+}

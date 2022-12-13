@@ -8,30 +8,34 @@
 #include "Character.h"
 #include "Maths.h"
 #include "ScoreManager.h"
+#include "GameManager.h"
 
 using namespace NCL;
 using namespace CSC8503;
 using namespace Maths;
 using namespace Rendering;
 
-Character::Character(ScoreManager* scoreManager,GameWorld* world) {
+Character::Character(GameManager* gameManager,ScoreManager* scoreManager,GameWorld* world) {
 
+	this->gameManager = gameManager;
 	this->scoreManager = scoreManager;
 	this->gameWorld = world;
 }
 
 GameObject* NCL::CSC8503::Character::Init(string name,const NCL::Maths::Vector3& position, NCL::MeshGeometry* charMesh, NCL::Rendering::ShaderBase* basicShader, NCL::CSC8503::GameWorld* world)
 {
+	bJump = false;
 	forceToMove = 10.f;
 	damageForce = 200.f;
 	rotationSpeed = 5;
 	charFriction = 1.0f;
-	jumpForce = 500.0f;
+	jumpForce = 800;
 	mouseSensitivity = 0.5f;
 	
 	meshSize = 1.0f;
 	inverseMass = 0.5f;
 
+	this->bTriggerDelete = true;
 	SphereVolume* volume = new SphereVolume(1.0f);
 
 	SetName(name);
@@ -99,6 +103,7 @@ void Character::Update(float dt, NCL::CSC8503::GameWorld* world)
 void NCL::CSC8503::Character::Jump()
 {
 	GetPhysicsObject()->AddForce(Vector3(0, 1, 0) * jumpForce);
+	bJump = false;
 }
 
 void Character::OnCollisionBegin(GameObject* otherObject)
@@ -106,7 +111,21 @@ void Character::OnCollisionBegin(GameObject* otherObject)
 	if (otherObject->GetPhysicsObject() && otherObject->GetName() != "floor" && Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) {
 		otherObject->GetPhysicsObject()->AddForce(otherObject->GetTransform().GetPosition() - transform.GetPosition() * damageForce);
 		scoreManager->AddScore(5);
+		//gameWorld->RemoveGameObject(otherObject, true);
+	}
 
+	if (otherObject->GetName() == "coin") {
+		scoreManager->AddScore(5);
+		gameWorld->RemoveGameObject(otherObject, false);
+	}
+
+	if (otherObject->GetName() == "key") {
+		gameManager->bisKeyCollected = true;
+		gameWorld->RemoveGameObject(otherObject, false);
+	}
+
+	if (otherObject->GetName() == "door" && gameManager->bisKeyCollected) {
+		gameWorld->RemoveGameObject(otherObject, false);
 	}
 
 	if (otherObject->GetName() == "floor") {
@@ -116,9 +135,7 @@ void Character::OnCollisionBegin(GameObject* otherObject)
 
 void Character::OnCollisionEnd(GameObject* otherObject)
 {
-	if (otherObject->GetName() == "floor") {
-		bJump = false;
-	}
+	
 }
 
 void NCL::CSC8503::Character::DestroyGameObject(GameTimer* timer, float timeToDestroy, GameObject* objectToDestroy)
