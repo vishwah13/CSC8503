@@ -61,22 +61,6 @@ GameObject* NCL::CSC8503::Character::Init(string name,const NCL::Maths::Vector3&
 
 void Character::Update(float dt, NCL::CSC8503::GameWorld* world)
 {
-	if (this != nullptr) {
-		
-		/*float mouseX = Window::GetMouse()->GetAbsolutePosition().x * -1 * mouseSensitivity;
-		float mouseY = Window::GetMouse()->GetAbsolutePosition().y * -1 * mouseSensitivity;
-
-		mouseY = Clamp(mouseY, -90.0f, 90.0f);*/
-		float mouseYaw = Window::GetMouse()->GetRelativePosition().x;
-		float mousePitch = Window::GetMouse()->GetRelativePosition().y;
-
-		
-
-		//world->GetMainCamera()->SetPosition(camPos);
-		//world->GetMainCamera()->SetPitch(mouseY);
-		//world->GetMainCamera()->SetYaw(mouseX);
-		
-	}
 
 	Vector3 movement;
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W))movement.z = -1;
@@ -94,6 +78,8 @@ void Character::Update(float dt, NCL::CSC8503::GameWorld* world)
 		Quaternion newRot = Quaternion::EulerAnglesToQuaternion(0, targetAngle, 0);
 		GetTransform().SetOrientation(Quaternion::Slerp(GetTransform().GetOrientation(), newRot, rotationSpeed * dt));
 	}
+
+	//std::cout << transform.GetPosition();
 }
 
 void NCL::CSC8503::Character::Jump()

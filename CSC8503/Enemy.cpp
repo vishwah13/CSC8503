@@ -6,6 +6,10 @@
 #include "NavigationGrid.h"
 #include "NavigationPath.h"
 
+#include "StateMachine.h"
+#include "StateTransition.h"
+#include "State.h"
+
 using namespace NCL;
 using namespace CSC8503;
 using namespace Maths;
@@ -21,8 +25,48 @@ GameObject* NCL::CSC8503::Enemy::Init(std::string name, const NCL::Maths::Vector
 {
 	float meshSize = 3.0f;
 	float inverseMass = 0.5f;
+	patrolPoints.push_back(Vector3(41,-17,15));
+	patrolPoints.push_back(Vector3(34, -17, 43));
+	patrolPoints.push_back(Vector3(81,-17,42));
+	patrolPoints.push_back(Vector3(76,-17,10));
+
+	//state Machine stuff
+	stateMachine = new StateMachine();
+
+	State* patrolState = new State([&](float dt)->void
+		{
+			std::cout << "I’m in Patrol state!\n" << std::endl;
+			patrol();
+		}
+	);
+
+	State* chaseState = new State([&](float dt)->void
+		{
+			std::cout << "I’m in chase state !\n" << std::endl;
+			chasePlayer(dt);
+		}
+	);
+
+	StateTransition* patrolToChase = new StateTransition(patrolState, chaseState, [&](void)->bool
+		{
+			return distanceToPlayer < 35.0f;
+		}
+	);
+	StateTransition* chaseTopatrol = new StateTransition(chaseState, patrolState, [&](void)->bool
+		{
+			return distanceToPlayer > 35.0f;
+		}
+	);
+
+	stateMachine->AddState(patrolState);
+	stateMachine->AddState(chaseState);
+
+	stateMachine->AddTransition(patrolToChase);
+	stateMachine->AddTransition(chaseTopatrol);
+	
 
 
+	//normal gameObject stuff
 	SetName(name);
 	bTriggerDelete = true;
 
@@ -48,9 +92,9 @@ GameObject* NCL::CSC8503::Enemy::Init(std::string name, const NCL::Maths::Vector
 	return this;
 }
 
-void NCL::CSC8503::Enemy::Update(float dt, GameWorld* world)
+void NCL::CSC8503::Enemy::Update(float dt)
 {
-
+	stateMachine->Update(dt);
 }
 
 void NCL::CSC8503::Enemy::findPath(Transform target, float dt)
@@ -61,16 +105,26 @@ void NCL::CSC8503::Enemy::findPath(Transform target, float dt)
 	Vector3 startPos(transform.GetPosition());
 	Vector3 endPos(target.GetPosition());
 
+	distanceToPlayer = (target.GetPosition() - transform.GetPosition()).Length();
+
 	bool foundPath = grid.FindPath(startPos, endPos, outPath);
+
 
 	while (outPath.PopWaypoint(currentPos))
 	{
 		nodes.push_back(currentPos);
-	}	
+	}
 	
 }
 
-void NCL::CSC8503::Enemy::move(float dt)
+void NCL::CSC8503::Enemy::patrol()
+{
+	int randIndex = rand() % patrolPoints.size();
+	Vector3 dir = patrolPoints[randIndex] - transform.GetPosition();
+	physicsObject->AddForce(dir * 25);
+}
+
+void NCL::CSC8503::Enemy::chasePlayer(float dt)
 { 
 	for (int i = 1; i < nodes.size(); ++i) {
 		Vector3 a = nodes[i - 1];

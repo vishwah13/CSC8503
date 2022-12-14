@@ -110,7 +110,8 @@ void TutorialGame::UpdateGame(float dt) {
 	}
 	if (enemy) {
 		enemy->findPath(player->GetTransform(), dt);
-		enemy->move(dt);
+		//enemy->chasePlayer(dt);
+		enemy->Update(dt);
 	}
 
 }
