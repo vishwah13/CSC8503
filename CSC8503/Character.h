@@ -44,6 +44,7 @@ namespace NCL {
 			float meshSize = 1.0f;
 			float inverseMass = 0.5f;
 			Vector3 lockedOffset = Vector3(0, 14, 20);
+			float cameraDist = 10.0f;
 		};
 	}
 }

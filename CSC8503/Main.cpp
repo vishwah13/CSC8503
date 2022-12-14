@@ -169,7 +169,7 @@ void TestPathfinding() {
 	NavigationPath outPath;
 	
 	Vector3 startPos(80, 0, 10);
-	Vector3 endPos(80, 0, 80);
+	Vector3 endPos(80, 0, 50);
 	
 	bool found = grid.FindPath(startPos, endPos, outPath);
 	
@@ -386,7 +386,7 @@ int main() {
 	w->GetTimer()->GetTimeDeltaSeconds(); //Clear the timer so we don't get a larget first dt!
 
 	TestStateMachine();
-	TestPathfinding();
+	//TestPathfinding();
 	TestBehaviourTree();
 	TestNetworking();
 	while (w->UpdateWindow() && !Window::GetKeyboard()->KeyDown(KeyboardKeys::ESCAPE)) {
@@ -405,7 +405,7 @@ int main() {
 		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::T)) {
 			w->SetWindowPosition(0, 0);
 		}
-		DisplayPathfinding();
+		//DisplayPathfinding();
 		w->SetTitle("Gametech frame time:" + std::to_string(1000.0f * dt));
 
 		g->UpdateGame(dt);

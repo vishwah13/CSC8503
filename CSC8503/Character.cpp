@@ -62,24 +62,20 @@ GameObject* NCL::CSC8503::Character::Init(string name,const NCL::Maths::Vector3&
 void Character::Update(float dt, NCL::CSC8503::GameWorld* world)
 {
 	if (this != nullptr) {
-		Vector3 objPos = GetTransform().GetPosition();
-		Vector3 camPos = objPos + lockedOffset;
-
-		Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0, 1, 0));
-
-		Matrix4 modelMat = temp.Inverse();
-
-		Quaternion q(modelMat);
-		Vector3 angles = q.ToEuler();
 		
-		float mouseX = Window::GetMouse()->GetAbsolutePosition().x * -1 * mouseSensitivity;
+		/*float mouseX = Window::GetMouse()->GetAbsolutePosition().x * -1 * mouseSensitivity;
 		float mouseY = Window::GetMouse()->GetAbsolutePosition().y * -1 * mouseSensitivity;
 
-		mouseY = Clamp(mouseY, -90.0f, 90.0f);
+		mouseY = Clamp(mouseY, -90.0f, 90.0f);*/
+		float mouseYaw = Window::GetMouse()->GetRelativePosition().x;
+		float mousePitch = Window::GetMouse()->GetRelativePosition().y;
 
-		world->GetMainCamera()->SetPosition(camPos);
-		world->GetMainCamera()->SetPitch(mouseY);
-		world->GetMainCamera()->SetYaw(mouseX);
+		
+
+		//world->GetMainCamera()->SetPosition(camPos);
+		//world->GetMainCamera()->SetPitch(mouseY);
+		//world->GetMainCamera()->SetYaw(mouseX);
+		
 	}
 
 	Vector3 movement;

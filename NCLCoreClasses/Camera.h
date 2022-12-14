@@ -110,5 +110,6 @@ namespace NCL {
 		float	yaw;
 		float	pitch;
 		Vector3 position;
+		bool bIsCameraMovementOn = false;
 	};
 }

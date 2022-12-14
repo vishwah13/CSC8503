@@ -1,7 +1,7 @@
 10
 10
 10
-xxxxxxxxxx
+xxxx..xxxx
 x........x
 x........x
 x....xxxxx
@@ -10,4 +10,4 @@ xxxxxx...x
 x......xxx
 x..xxxxxxx
 x........x
-xxxxxxxxxx
+xxxx..xxxx

@@ -14,6 +14,16 @@ void Camera::UpdateCamera(float dt) {
 	pitch	-= (Window::GetMouse()->GetRelativePosition().y);
 	yaw		-= (Window::GetMouse()->GetRelativePosition().x);
 
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::C)) {
+		bIsCameraMovementOn = true;
+		std::cout << "on Camera Movement" << std::endl;
+	}
+	else if (Window::GetKeyboard()->KeyDown(KeyboardKeys::P))
+	{
+		bIsCameraMovementOn = false;
+		std::cout << " On Player Movement" << std::endl;
+	}
+
 	//Bounds check the pitch, to be between straight up and straight down ;)
 	pitch = std::min(pitch, 90.0f);
 	pitch = std::max(pitch, -90.0f);
@@ -24,10 +34,13 @@ void Camera::UpdateCamera(float dt) {
 	if (yaw > 360.0f) {
 		yaw -= 360.0f;
 	}
+	
 
 	float frameSpeed = 100 * dt;
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) {
+	if (!bIsCameraMovementOn) return;
+
+	/*if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) {
 		position += Matrix4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(0, 0, -1) * frameSpeed;
 	}
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S)) {
@@ -46,7 +59,7 @@ void Camera::UpdateCamera(float dt) {
 	}
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::SPACE)) {
 		position.y -= frameSpeed;
-	}
+	}*/
 }
 
 /*

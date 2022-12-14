@@ -9,6 +9,7 @@
 #include "ScoreManager.h"
 #include "GameManager.h"
 #include "Character.h"
+#include "Enemy.h"
 #include "Door.h"
 
 namespace NCL {
@@ -38,6 +39,7 @@ namespace NCL {
 			ShaderBase* basicShader = nullptr;
 
 		protected:
+			float cameraDist = 10.f;
 			float myDeltaTime;
 			float force;
 			float playerRotateSpeed;
@@ -89,6 +91,7 @@ namespace NCL {
 			StateGameObject* testStateObject;
 
 			Character* player = nullptr;
+			Enemy* enemy = nullptr;
 			ScoreManager* scoreManager = nullptr;
 			GameManager* gameManager = nullptr;
 			//Door* door = nullptr;

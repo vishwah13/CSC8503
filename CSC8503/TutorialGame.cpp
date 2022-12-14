@@ -36,6 +36,7 @@ TutorialGame::TutorialGame()	{
 	//door = new Door(gameManager,world);
 	//coins = new Coin(world);
 	player = new Character(gameManager,scoreManager,world);
+	
 
 	InitialiseAssets();
 }
@@ -78,9 +79,11 @@ TutorialGame::~TutorialGame()	{
 	delete player;
 }
 
+
 void TutorialGame::UpdateGame(float dt) {
 
 	myDeltaTime += dt;
+	world->GetMainCamera()->UpdateCamera(dt);
 	//UpdateKeys(myDeltaTime);
 
 	//SelectObject();
@@ -93,11 +96,21 @@ void TutorialGame::UpdateGame(float dt) {
 	renderer->Update(dt);
 	physics->Update(dt);
 
+	float cameraX = cameraDist * cos((world->GetMainCamera()->GetYaw() + 270) * 3.14f / 180) + player->GetTransform().GetPosition().x;
+	float cameraY = cameraDist * sin((world->GetMainCamera()->GetPitch()) * 3.14f / 180);
+	float cameraZ = cameraDist * sin((world->GetMainCamera()->GetYaw() - 270) * 3.14f / 180) + player->GetTransform().GetPosition().z;
+
+	world->GetMainCamera()->SetPosition(Vector3(cameraX, -cameraY + player->GetTransform().GetPosition().y, cameraZ));
+
 	renderer->Render();
 	Debug::UpdateRenderables(dt);
 
 	if (player) {
 		player->Update(dt, world);
+	}
+	if (enemy) {
+		enemy->findPath(player->GetTransform(), dt);
+		enemy->move(dt);
 	}
 
 }
@@ -145,9 +158,9 @@ void TutorialGame::UpdateKeys(float myDeltaTime) {
 void TutorialGame::InitCamera() {
 	world->GetMainCamera()->SetNearPlane(0.1f);
 	world->GetMainCamera()->SetFarPlane(500.0f);
-	world->GetMainCamera()->SetPitch(-15.0f);
-	world->GetMainCamera()->SetYaw(315.0f);
-	world->GetMainCamera()->SetPosition(Vector3(-60, 40, 60));
+	//world->GetMainCamera()->SetPitch(-15.0f);
+	//world->GetMainCamera()->SetYaw(315.0f);
+	//world->GetMainCamera()->SetPosition(Vector3(-60, 40, 60));
 	lockedObject = nullptr;
 }
 
@@ -186,6 +199,7 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
 
 	floor->GetPhysicsObject()->SetInverseMass(0);
 	floor->GetPhysicsObject()->InitCubeInertia();
+	floor->GetPhysicsObject()->SetElasticity(0.0f);
 
 	world->AddGameObject(floor);
 
@@ -426,14 +440,17 @@ void TutorialGame::InitDefaultFloor() {
 void TutorialGame::InitGameExamples() {
 	//gameManager->bisKeyCollected = true;
 	//door->AddDoorToWorld(Vector3(10, 0, 0), Vector3(2, 4, 2), 1.0f, cubeMesh, basicShader, basicTex);
-	CreateMaze("TestGrid2.txt");
+	CreateMaze("TestGrid1.txt");
 	AddKeyToWorld(Vector3(15, 0, 0), Vector3(1, 1, 1), 1.0f);
 	AddDoorToWorld(Vector3(10, -15, 0), Vector3(1, 2, 1), 0.0f);
 	//coins->InitCollectableGridWorld(2, 2, 10, 10, .2f, this);
-	player->Init("Goaty",Vector3(0, 5, 0), charMesh, basicShader, world);
+	player->Init("Goaty",Vector3(80, 0, 50), charMesh, basicShader, world);
 	player->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
 	
-	AddEnemyToWorld(Vector3(5, 5, 0));
+	enemy = new Enemy(world);
+	//AddEnemyToWorld(Vector3(5, 5, 0));
+	enemy->Init("Enemy", Vector3(80, 0, 10), enemyMesh, basicShader, world);
+	//enemy->findPath();
 	InitCollectableGridWorld(3, 3, 40, 40, 0.2f);
 	//AddCollectableToWorld(Vector3(10, 2, 0), .2f, 1.0f);
 	AddBonusToWorld(Vector3(10, 5, 0));
