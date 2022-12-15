@@ -45,6 +45,8 @@ namespace NCL {
 			float inverseMass = 0.5f;
 			Vector3 lockedOffset = Vector3(0, 14, 20);
 			float cameraDist = 10.0f;
+			float timer;
+			bool bIsPowerUp = false;
 		};
 	}
 }

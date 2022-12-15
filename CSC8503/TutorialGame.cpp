@@ -109,9 +109,9 @@ void TutorialGame::UpdateGame(float dt) {
 		player->Update(dt, world);
 	}
 	if (enemy) {
-		enemy->findPath(player->GetTransform(), dt);
+		//enemy->findPath(player->GetTransform(), dt);
 		//enemy->chasePlayer(dt);
-		enemy->Update(dt);
+		enemy->Update(dt,player->GetTransform(),PowerUpObj->GetTransform());
 	}
 
 }
@@ -394,23 +394,28 @@ GameObject* TutorialGame::AddEnemyToWorld(const Vector3& position) {
 }
 
 GameObject* TutorialGame::AddBonusToWorld(const Vector3& position) {
-	GameObject* apple = new GameObject();
 
-	SphereVolume* volume = new SphereVolume(0.5f);
-	apple->SetBoundingVolume((CollisionVolume*)volume);
-	apple->GetTransform()
+	GameObject* bonus = new GameObject();
+	bonus->SetName("bonus");
+
+	SphereVolume* volume = new SphereVolume(2.0f);
+	bonus->SetBoundingVolume((CollisionVolume*)volume);
+	bonus->GetTransform()
 		.SetScale(Vector3(2, 2, 2))
 		.SetPosition(position);
 
-	apple->SetRenderObject(new RenderObject(&apple->GetTransform(), bonusMesh, nullptr, basicShader));
-	apple->SetPhysicsObject(new PhysicsObject(&apple->GetTransform(), apple->GetBoundingVolume()));
+	bonus->SetRenderObject(new RenderObject(&bonus->GetTransform(), sphereMesh, nullptr, basicShader));
+	bonus->GetRenderObject()->SetColour(Debug::YELLOW);
+	bonus->SetPhysicsObject(new PhysicsObject(&bonus->GetTransform(), bonus->GetBoundingVolume()));
 
-	apple->GetPhysicsObject()->SetInverseMass(1.0f);
-	apple->GetPhysicsObject()->InitSphereInertia();
+	bonus->GetPhysicsObject()->SetInverseMass(1.0f);
+	bonus->GetPhysicsObject()->InitSphereInertia();
 
-	world->AddGameObject(apple);
+	bonus->GetPhysicsObject()->SetElasticity(0.0f);
 
-	return apple;
+	world->AddGameObject(bonus);
+
+	return bonus;
 }
 
 StateGameObject* NCL::CSC8503::TutorialGame::AddStateObjectToWorld(const Vector3& position)
@@ -454,7 +459,8 @@ void TutorialGame::InitGameExamples() {
 	//enemy->findPath();
 	InitCollectableGridWorld(3, 3, 40, 40, 0.2f);
 	//AddCollectableToWorld(Vector3(10, 2, 0), .2f, 1.0f);
-	AddBonusToWorld(Vector3(10, 5, 0));
+	PowerUpObj = AddBonusToWorld(Vector3(80, 0, 20));
+
 	BridgeConstraintTest();
 }
 

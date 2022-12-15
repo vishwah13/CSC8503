@@ -25,6 +25,7 @@ Character::Character(GameManager* gameManager,ScoreManager* scoreManager,GameWor
 GameObject* NCL::CSC8503::Character::Init(string name,const NCL::Maths::Vector3& position, NCL::MeshGeometry* charMesh, NCL::Rendering::ShaderBase* basicShader, NCL::CSC8503::GameWorld* world)
 {
 	bJump = false;
+	bIsPowerUp = false;
 	forceToMove = 10.f;
 	damageForce = 200.f;
 	rotationSpeed = 5;
@@ -74,9 +75,18 @@ void Character::Update(float dt, NCL::CSC8503::GameWorld* world)
 	targetAngle = RadiansToDegrees(targetAngle) + world->GetMainCamera()->GetYaw();
 	
 	if (movement.Length() != 0) {
-		GetPhysicsObject()->AddForce(GetTransform().GetOrientation() * Vector3(0, 0, -1) * forceToMove);
+		GetPhysicsObject()->AddForce(GetTransform().GetOrientation() * Vector3(0, 0, -1) * (bIsPowerUp ? 50 : forceToMove ));
 		Quaternion newRot = Quaternion::EulerAnglesToQuaternion(0, targetAngle, 0);
 		GetTransform().SetOrientation(Quaternion::Slerp(GetTransform().GetOrientation(), newRot, rotationSpeed * dt));
+	}
+
+	if (bIsPowerUp) {
+		timer += dt;
+
+		if (timer > 5.0f) {
+			bIsPowerUp = false;
+			timer = 0;
+		}
 	}
 
 	//std::cout << transform.GetPosition();
@@ -112,6 +122,11 @@ void Character::OnCollisionBegin(GameObject* otherObject)
 
 	if (otherObject->GetName() == "floor") {
 		bJump = true;
+	}
+
+	if (otherObject->GetName() == "bonus") {
+		gameWorld->RemoveGameObject(otherObject, false);
+		bIsPowerUp = true;
 	}
 }
 

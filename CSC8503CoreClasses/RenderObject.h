@@ -1,6 +1,7 @@
 #pragma once
 #include "TextureBase.h"
 #include "ShaderBase.h"
+#include "Vector4.h"
 
 namespace NCL {
 	using namespace NCL::Rendering;

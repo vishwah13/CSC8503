@@ -131,7 +131,7 @@ namespace NCL {
 				lockedObject = o;
 			}
 
-			GameObject* objClosest = nullptr;
+			GameObject* PowerUpObj = nullptr;
 		};
 	}
 }
