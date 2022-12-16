@@ -273,6 +273,7 @@ GameObject* NCL::CSC8503::TutorialGame::AddCollectableToWorld(const Vector3& pos
 		.SetPosition(position);
 
 	coin->SetRenderObject(new RenderObject(&coin->GetTransform(), coinMesh, basicTex, basicShader));
+	//coins->GetRenderObject()->SetColour(Vector4(0,0,1,1));
 	coin->SetPhysicsObject(new PhysicsObject(&coin->GetTransform(), coin->GetBoundingVolume()));
 
 	coin->GetPhysicsObject()->SetInverseMass(inverseMass);

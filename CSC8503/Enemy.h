@@ -39,6 +39,7 @@ namespace NCL {
 			void OnCollisionEnd(GameObject* otherObject) override;
 
 		protected:
+			bool bGameOver = false;
 			float timer = 0;
 			float distanceToPlayer = 0;
 			Transform target;

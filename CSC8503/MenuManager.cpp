@@ -73,7 +73,7 @@ void MenuManager::Init()
 		}
 	);
 
-	stateMachine->AddState(startScreen);
+	//stateMachine->AddState(startScreen);
 	stateMachine->AddState(playGame);
 	stateMachine->AddState(unPauseGame);
 	stateMachine->AddState(pauseGame);

@@ -25,6 +25,7 @@ NCL::CSC8503::Enemy::Enemy(GameWorld* world,bool bUseStateMachine)
 {
 	this->world = world;
 	this->bUseStateMachine = bUseStateMachine;
+	this->bGameOver = false;
 }
 
 GameObject* NCL::CSC8503::Enemy::Init(std::string name, const NCL::Maths::Vector3& position, MeshGeometry* enemyMesh, NCL::Rendering::ShaderBase* basicShader, GameWorld* world)
@@ -233,6 +234,8 @@ void NCL::CSC8503::Enemy::Update(float dt,Transform target,Transform powerUp)
 	sight(dt,target);
 	//distanceToPlayer = (target.GetPosition() - transform.GetPosition()).Length();
 	
+	if(bGameOver)
+		Debug::Print("You Lost !!!!", Vector2(15, 50));
 
 	
 }
@@ -303,11 +306,12 @@ void NCL::CSC8503::Enemy::OnCollisionBegin(GameObject* otherObject)
 {
 	if (otherObject->GetName() == "Goaty") {
 
+		bGameOver = true;
 		world->RemoveGameObject(otherObject, false);
 	}
 
 	if (otherObject->GetName() == "bonus") {
-
+		
 		world->RemoveGameObject(otherObject, false);
 	}
 }
