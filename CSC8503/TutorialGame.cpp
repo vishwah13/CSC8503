@@ -35,7 +35,7 @@ TutorialGame::TutorialGame()	{
 	scoreManager = new ScoreManager();
 	menuManager = new MenuManager();
 	gameManager = new GameManager();
-	//door = new Door(gameManager,world);
+	door = new Door(gameManager,world,scoreManager);
 	//coins = new Coin(world);
 	player = new Character(gameManager,scoreManager,world);
 	
@@ -48,6 +48,7 @@ void TutorialGame::InitialiseAssets() {
 	sphereMesh	= renderer->LoadMesh("sphere.msh");
 	charMesh	= renderer->LoadMesh("goat.msh");
 	enemyMesh	= renderer->LoadMesh("Keeper.msh");
+	gooseMesh	= renderer->LoadMesh("goose.msh");
 	bonusMesh	= renderer->LoadMesh("apple.msh");
 	capsuleMesh = renderer->LoadMesh("capsule.msh");
 	coinMesh = renderer->LoadMesh("coin.msh");
@@ -57,9 +58,11 @@ void TutorialGame::InitialiseAssets() {
 
 	InitCamera();
 	InitWorld();
+	
 
 	damping = 0.4f;
-	
+
+	menuManager->Init();
 }
 
 TutorialGame::~TutorialGame()	{
@@ -85,6 +88,12 @@ TutorialGame::~TutorialGame()	{
 
 void TutorialGame::UpdateGame(float dt) {
 
+	if (menuManager) {
+		menuManager->Update(dt);
+	}
+
+	if (menuManager->bPauesd) return;
+
 	myDeltaTime += dt;
 	world->GetMainCamera()->UpdateCamera(dt);
 	//UpdateKeys(myDeltaTime);
@@ -108,6 +117,7 @@ void TutorialGame::UpdateGame(float dt) {
 	renderer->Render();
 	Debug::UpdateRenderables(dt);
 
+
 	if (player) {
 		player->Update(dt, world);
 	}
@@ -116,9 +126,11 @@ void TutorialGame::UpdateGame(float dt) {
 		//enemy->chasePlayer(dt);
 		enemy->Update(dt,player->GetTransform(),PowerUpObj->GetTransform());
 	}
-
-	if (menuManager) {
-		menuManager->Update(dt);
+	if (goose) {
+		goose->Update(dt, player->GetTransform(), PowerUpObj->GetTransform());
+	}
+	if (door) {
+		door->Update(dt);
 	}
 
 }
@@ -177,7 +189,7 @@ void TutorialGame::InitWorld() {
 	physics->Clear();
 	physics->UseGravity(true);
 
-	//InitMixedGridWorld(10,10, 10.0f, 10.0f);
+	InitMixedGridWorld(4,4, 3.0f, 3.0f);
 
 	InitGameExamples();
 	InitDefaultFloor();
@@ -321,30 +333,30 @@ GameObject* NCL::CSC8503::TutorialGame::AddKeyToWorld(const Vector3& position, V
 	return key;
 }
 
-GameObject* NCL::CSC8503::TutorialGame::AddDoorToWorld(const Vector3& position, Vector3 dimensions, float inverseMass)
-{
-	GameObject* door = new GameObject();
-	door->SetName("door");
-	door->bTriggerDelete = true;
-	AABBVolume* volume = new AABBVolume(dimensions);
-	door->SetBoundingVolume((CollisionVolume*)volume);
-
-	door->GetTransform()
-		.SetPosition(position)
-		.SetScale(dimensions * 2);
-
-	door->SetRenderObject(new RenderObject(&door->GetTransform(), cubeMesh, basicTex, basicShader));
-	door->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
-	door->SetPhysicsObject(new PhysicsObject(&door->GetTransform(), door->GetBoundingVolume()));
-
-	door->GetPhysicsObject()->SetInverseMass(inverseMass);
-	door->GetPhysicsObject()->InitCubeInertia();
-	door->GetPhysicsObject()->SetElasticity(0.0f);
-
-	world->AddGameObject(door);
-
-	return door;
-}
+//GameObject* NCL::CSC8503::TutorialGame::AddDoorToWorld(const Vector3& position, Vector3 dimensions, float inverseMass)
+//{
+//	GameObject* door = new GameObject();
+//	door->SetName("door");
+//	door->bTriggerDelete = true;
+//	AABBVolume* volume = new AABBVolume(dimensions);
+//	door->SetBoundingVolume((CollisionVolume*)volume);
+//
+//	door->GetTransform()
+//		.SetPosition(position)
+//		.SetScale(dimensions * 2);
+//
+//	door->SetRenderObject(new RenderObject(&door->GetTransform(), cubeMesh, basicTex, basicShader));
+//	door->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
+//	door->SetPhysicsObject(new PhysicsObject(&door->GetTransform(), door->GetBoundingVolume()));
+//
+//	door->GetPhysicsObject()->SetInverseMass(inverseMass);
+//	door->GetPhysicsObject()->InitCubeInertia();
+//	door->GetPhysicsObject()->SetElasticity(0.0f);
+//
+//	world->AddGameObject(door);
+//
+//	return door;
+//}
 
 GameObject* TutorialGame::AddPlayerToWorld(const Vector3& position) {
 	float meshSize		= 1.0f;
@@ -452,23 +464,24 @@ void TutorialGame::InitDefaultFloor() {
 
 void TutorialGame::InitGameExamples() {
 	//gameManager->bisKeyCollected = true;
-	//door->AddDoorToWorld(Vector3(10, 0, 0), Vector3(2, 4, 2), 1.0f, cubeMesh, basicShader, basicTex);
+	door->AddDoorToWorld(Vector3(10, -15, 15), Vector3(2, 4, 2), 0.0f, cubeMesh, basicShader, basicTex);
 	CreateMaze("TestGrid1.txt");
-	AddKeyToWorld(Vector3(15, 0, 0), Vector3(1, 1, 1), 1.0f);
-	AddDoorToWorld(Vector3(10, -15, 0), Vector3(1, 2, 1), 0.0f);
+	AddKeyToWorld(Vector3(15, -15, 20), Vector3(1, 1, 1), 1.0f);
+	//AddDoorToWorld(Vector3(10, -15, 0), Vector3(1, 2, 1), 0.0f);
 	//coins->InitCollectableGridWorld(2, 2, 10, 10, .2f, this);
 	player->Init("Goaty",Vector3(80, 0, 50), charMesh, basicShader, world);
 	player->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
 	
-	enemy = new Enemy(world);
+	enemy = new Enemy(world,true);
+	goose = new Enemy(world,false);
 	//AddEnemyToWorld(Vector3(5, 5, 0));
 	enemy->Init("Enemy", Vector3(80, 0, 10), enemyMesh, basicShader, world);
-
-	menuManager->Init();
+	goose->Init("Goose", Vector3(50, 0, 10), gooseMesh, basicShader, world);
+	
 	//enemy->findPath();
 	InitCollectableGridWorld(3, 3, 40, 40, 0.2f);
 	//AddCollectableToWorld(Vector3(10, 2, 0), .2f, 1.0f);
-	PowerUpObj = AddBonusToWorld(Vector3(80, 0, 20));
+	PowerUpObj = AddBonusToWorld(Vector3(60, 0, 60));
 
 	BridgeConstraintTest();
 }
@@ -487,7 +500,7 @@ void NCL::CSC8503::TutorialGame::CreateMaze(const std::string& filename)
 
 			char type = 0;
 			infile >> type;
-			Vector3 position = Vector3((float)(x * nodeSize) - 100, -13, (float)(y * nodeSize) - 100);
+			Vector3 position = Vector3((float)(x * nodeSize), -13, (float)(y * nodeSize));
 			if (type == 'x') {
 				AddCubeToWorld(position, Vector3(nodeSize / 2, nodeSize / 2, nodeSize / 2), 0.0f);
 			}
@@ -521,7 +534,7 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 
 	for (int x = 0; x < numCols; ++x) {
 		for (int z = 0; z < numRows; ++z) {
-			Vector3 position = Vector3(x * colSpacing, 5.0f, z * rowSpacing);
+			Vector3 position = Vector3(x + 10 * colSpacing, 5.0f, z + 10 * rowSpacing);
 
 			if (rand() % 2) {
 				AddCubeToWorld(position, cubeDims);
@@ -634,14 +647,14 @@ void TutorialGame::MoveSelectedObject() {
 }
 
 void TutorialGame::BridgeConstraintTest() {
-	Vector3 cubeSize = Vector3(8, 8, 8);
+	Vector3 cubeSize = Vector3(2,2,2);
 	
-	float invCubeMass = 5; //how heavy the middle pieces are
-	int numLinks = 10;
-	float maxDistance = 30; // constraint distance
-	float cubeDistance = 20; // distance between links
+	float invCubeMass = 2; //how heavy the middle pieces are
+	int numLinks = 6;
+	float maxDistance = 10; // constraint distance
+	float cubeDistance = 8; // distance between links
 	
-	Vector3 startPos = Vector3(0,-50,0);
+	Vector3 startPos = Vector3(0,20,0);
 	
 	GameObject * start = AddCubeToWorld(startPos + Vector3(0, 0, 0), cubeSize, 0);
 	GameObject * end = AddCubeToWorld(startPos + Vector3((numLinks + 2) * cubeDistance, 0, 0), cubeSize, 0);

@@ -9,6 +9,7 @@ namespace NCL {
 
 		public:
 			StateMachine* stateMachine;
+			bool bPauesd = false;
 
 			void Init();
 			void Update(float dt);

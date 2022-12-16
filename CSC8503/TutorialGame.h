@@ -93,10 +93,11 @@ namespace NCL {
 
 			Character* player = nullptr;
 			Enemy* enemy = nullptr;
+			Enemy* goose = nullptr;
 			MenuManager* menuManager;
 			ScoreManager* scoreManager = nullptr;
 			GameManager* gameManager = nullptr;
-			//Door* door = nullptr;
+			Door* door = nullptr;
 			Coin* coins = nullptr;
 
 #ifdef USEVULKAN
@@ -124,6 +125,7 @@ namespace NCL {
 			//Coursework Meshes
 			MeshGeometry*	charMesh	= nullptr;
 			MeshGeometry*	enemyMesh	= nullptr;
+			MeshGeometry*	gooseMesh	= nullptr;
 			MeshGeometry*	bonusMesh	= nullptr;
 
 			//Coursework Additional functionality	

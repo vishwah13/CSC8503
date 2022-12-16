@@ -22,15 +22,18 @@ namespace NCL {
 		{
 		public:
 			GameWorld* world;
-			Enemy(GameWorld* world);
+			Enemy(GameWorld* world,bool stateMachine);
 			GameObject* Init(std::string name, const  NCL::Maths::Vector3& position, MeshGeometry* charMesh, NCL::Rendering::ShaderBase* basicShader, NCL::CSC8503::GameWorld* world);
 			void Update(float dt,Transform target, Transform powerUp);
 
+			bool bUseStateMachine = false;
 			StateMachine* stateMachine;
 			void findPath(Transform target);
 			void patrol();
 			void lookForBonus();
 			void chaseTarget(float dt, Transform target);
+
+			void sight(float dt, Transform target);
 
 			void OnCollisionBegin(GameObject* otherObject) override;
 			void OnCollisionEnd(GameObject* otherObject) override;

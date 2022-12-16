@@ -70,6 +70,14 @@ void Character::Update(float dt, NCL::CSC8503::GameWorld* world)
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D))movement.x = 1;
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::SPACE) && bJump) Jump();
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::LEFT)) {
+		physicsObject->AddTorque(Vector3(-10, 0, 0));
+	}
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
+		physicsObject->AddTorque(Vector3(10, 0, 0));
+	}
 		
 	float targetAngle = atan2(-movement.x, -movement.z);
 	targetAngle = RadiansToDegrees(targetAngle) + world->GetMainCamera()->GetYaw();
@@ -116,9 +124,9 @@ void Character::OnCollisionBegin(GameObject* otherObject)
 		gameWorld->RemoveGameObject(otherObject, false);
 	}
 
-	if (otherObject->GetName() == "door" && gameManager->bisKeyCollected) {
+	/*if (otherObject->GetName() == "door" && gameManager->bisKeyCollected) {
 		gameWorld->RemoveGameObject(otherObject, false);
-	}
+	}*/
 
 	if (otherObject->GetName() == "floor") {
 		bJump = true;
