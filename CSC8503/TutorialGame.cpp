@@ -9,6 +9,7 @@
 #include "StateMachine.h"
 #include "GameTimer.h"
 #include "Assets.h"
+#include "MenuManager.h"
 
 #include <fstream>
 
@@ -32,6 +33,7 @@ TutorialGame::TutorialGame()	{
 	useGravity		= true;
 	inSelectionMode = false;
 	scoreManager = new ScoreManager();
+	menuManager = new MenuManager();
 	gameManager = new GameManager();
 	//door = new Door(gameManager,world);
 	//coins = new Coin(world);
@@ -76,6 +78,7 @@ TutorialGame::~TutorialGame()	{
 	delete world;
 
 	delete scoreManager;
+	delete menuManager;
 	delete player;
 }
 
@@ -112,6 +115,10 @@ void TutorialGame::UpdateGame(float dt) {
 		//enemy->findPath(player->GetTransform(), dt);
 		//enemy->chasePlayer(dt);
 		enemy->Update(dt,player->GetTransform(),PowerUpObj->GetTransform());
+	}
+
+	if (menuManager) {
+		menuManager->Update(dt);
 	}
 
 }
@@ -456,6 +463,8 @@ void TutorialGame::InitGameExamples() {
 	enemy = new Enemy(world);
 	//AddEnemyToWorld(Vector3(5, 5, 0));
 	enemy->Init("Enemy", Vector3(80, 0, 10), enemyMesh, basicShader, world);
+
+	menuManager->Init();
 	//enemy->findPath();
 	InitCollectableGridWorld(3, 3, 40, 40, 0.2f);
 	//AddCollectableToWorld(Vector3(10, 2, 0), .2f, 1.0f);

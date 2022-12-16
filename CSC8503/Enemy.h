@@ -46,9 +46,9 @@ namespace NCL {
 			std::vector <Vector3> patrolPoints;
 
 			BehaviourState state;
-			BehaviourSelector* selection;
-			BehaviourSequence* sequence;
-			BehaviourSequence* rootSequence;
+			BehaviourSelector* selection = nullptr;
+			BehaviourSequence* sequence = nullptr;
+			BehaviourSequence* rootSequence = nullptr;
 		};
 
 	}

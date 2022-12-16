@@ -14,6 +14,7 @@
 
 namespace NCL {
 	namespace CSC8503 {
+		class MenuManager;
 		class TutorialGame;
 		class Coin :public GameObject {
 		public:
@@ -92,6 +93,7 @@ namespace NCL {
 
 			Character* player = nullptr;
 			Enemy* enemy = nullptr;
+			MenuManager* menuManager;
 			ScoreManager* scoreManager = nullptr;
 			GameManager* gameManager = nullptr;
 			//Door* door = nullptr;
